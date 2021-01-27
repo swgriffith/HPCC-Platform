@@ -138,6 +138,13 @@ data:
             job: %jobname
         spec:
           serviceAccountName: hpcc-default
+          nodeSelector:
+            agentpool: thorpool
+          tolerations:
+          - key: "nvme"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
           containers:
           - name: thorworker-%jobname
 {{- include "hpcc.addSecurityContext" . | indent 12 }}
@@ -151,13 +158,17 @@ data:
                     %args
                   ]
             volumeMounts:
+            - name: localdisk
+              mountPath: "/mnt/localdisk"
+              readOnly: false            
 {{ include "hpcc.addConfigMapVolumeMount" .me | indent 12 }}
-{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
 {{ include "hpcc.addDllVolumeMount" .root | indent 12 }}
 {{ include "hpcc.addSecretVolumeMounts" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
           volumes:
+          - name: localdisk
+            persistentVolumeClaim:
+              claimName: pvc-localdisk
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
-{{ include "hpcc.addDataVolume" . | indent 10 }}
 {{ include "hpcc.addDllVolume" .root | indent 10 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
           restartPolicy: Never
