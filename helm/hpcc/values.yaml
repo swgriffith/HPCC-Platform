@@ -197,9 +197,21 @@ vaults:
 
   esp:
 
+  ## The keys for code signing may be imported from the vault.  Multiple keys may be imported.
+  ## gpg keys may be imported as follows:
+  ## vault kv put secret/codeSign/gpg-private-key-1 passphrase=<passphrase> private=@<private_key_file1>
+  ## vault kv put secret/codeSign/gpg-private-key-2 passphrase=<passphrase> private=@<private_key_file2>
   codeSign:
-
+    # - name: codesign-private-keys
+    #  url: http://${env.VAULT_SERVICE_HOST}:${env.VAULT_SERVICE_PORT}/v1/secret/data/codeSign/${secret}
+    #  kind: kv-v2
+  ## The keys for verifying signed code may be imported from the vault.
+  ## vault kv put secret/codeVerify/gpg-public-key-1 public=@<public_key_file1>
+  ## vault kv put secret/codeVerify/gpg-public-key-2 public=@<public_key_file2>
   codeVerify:
+    # - name: codesign-public-keys
+    #  url: http://${env.VAULT_SERVICE_HOST}:${env.VAULT_SERVICE_PORT}/v1/secret/data/codeVerify/${secret}
+    #  kind: kv-v2
 
 bundles: []
 ## Specifying bundles here will cause the indicated bundles to be downloaded and installed automatically
@@ -334,6 +346,8 @@ roxie:
   ## Set localAgent to true for a scalable cluster of "single-node" roxie servers, each implementing all channels locally
   localAgent: false
   useAeron: false
+  ## Set mtuPayload to the maximum amount of data Roxie will put in a single packet. This should be just less than the system MTU. Default is 1400
+  # mtuPayload: 3800
   #channelResources:
   #  cpu: "4"
   #  memory: "4G"
@@ -344,7 +358,7 @@ roxie:
 thor:
 - name: thor
   prefix: thor
-  numWorkers: 2
+  numWorkers: 10
   maxJobs: 4
   maxGraphs: 2
   #managerResources:

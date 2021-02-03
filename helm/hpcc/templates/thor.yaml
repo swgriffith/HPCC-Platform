@@ -101,14 +101,16 @@ data:
           - key: "nvme"
             operator: "Equal"
             value: "true"
-            effect: "NoSchedule"          
+            effect: "NoSchedule"
           initContainers:
           - name: volume-mount-hack
             image: busybox
             command: ["sh", "-c", "chown -R 10000:10001 /var/lib/HPCCSystems/hpcc-data"]
             volumeMounts:
-            - name: localdisk
-              mountPath: "/var/lib/HPCCSystems/hpcc-data"
+            - name: nvme
+              mountPath: "/var/lib/HPCCSystems/hpcc-data"            
+          initContainers:
+            {{- include "hpcc.checkDataMount" . | indent 10 }}
           containers:
           - name: thormanager-%jobname
 {{- include "hpcc.addSecurityContext" . | indent 12 }}
@@ -122,16 +124,15 @@ data:
                     %args
                   ]
             volumeMounts:
-            - name: localdisk
-              mountPath: "/var/lib/HPCCSystems/hpcc-data"
-              readOnly: false               
+            - name: nvme
+              mountPath: /var/lib/HPCCSystems/hpcc-data   
 {{ include "hpcc.addConfigMapVolumeMount" .me | indent 12 }}
 {{ include "hpcc.addDllVolumeMount" .root | indent 12 }}
 {{ include "hpcc.addSecretVolumeMounts" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
           volumes:
-          - name: localdisk
-            persistentVolumeClaim:
-              claimName: pvc-localdisk          
+          - name: nvme
+            hostPath:
+              path: /mnt/fast-disks
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
 {{ include "hpcc.addDllVolume" .root | indent 10 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
@@ -166,8 +167,8 @@ data:
             image: busybox
             command: ["sh", "-c", "chown -R 10000:10001 /var/lib/HPCCSystems/hpcc-data"]
             volumeMounts:
-            - name: localdisk
-              mountPath: "/var/lib/HPCCSystems/hpcc-data"            
+            - name: nvme
+              mountPath: "/var/lib/HPCCSystems/hpcc-data"             
           containers:
           - name: thorworker-%jobname
 {{- include "hpcc.addSecurityContext" . | indent 12 }}
@@ -181,16 +182,15 @@ data:
                     %args
                   ]
             volumeMounts:
-            - name: localdisk
-              mountPath: "/var/lib/HPCCSystems/hpcc-data"
-              readOnly: false             
+            - name: nvme
+              mountPath: /var/lib/HPCCSystems/hpcc-data  
 {{ include "hpcc.addConfigMapVolumeMount" .me | indent 12 }}
 {{ include "hpcc.addDllVolumeMount" .root | indent 12 }}
 {{ include "hpcc.addSecretVolumeMounts" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
           volumes:
-          - name: localdisk
-            persistentVolumeClaim:
-              claimName: pvc-localdisk
+          - name: nvme
+            hostPath:
+              path: /mnt/fast-disks
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
 {{ include "hpcc.addDllVolume" .root | indent 10 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
@@ -302,14 +302,14 @@ spec:
       - key: "nvme"
         operator: "Equal"
         value: "true"
-        effect: "NoSchedule"   
+        effect: "NoSchedule"
       initContainers:
       - name: volume-mount-hack
         image: busybox
         command: ["sh", "-c", "chown -R 10000:10001 /var/lib/HPCCSystems/hpcc-data"]
         volumeMounts:
-        - name: localdisk
-          mountPath: "/var/lib/HPCCSystems/hpcc-data"    
+        - name: nvme
+          mountPath: "/var/lib/HPCCSystems/hpcc-data" 
       containers:
       - name: {{ $commonCtx.thorAgentName | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -320,20 +320,24 @@ spec:
                 {{ include "hpcc.daliArg" $ }},
                 {{ printf "\"--name=%s\"" .name }}
               ]
+{{- include "hpcc.addSecurityContext" $commonCtx | indent 8 }}
 {{- if not $.Values.global.privileged }}
 {{- include "hpcc.addStubResources" . | indent 8 }}
 {{- end }}
 {{ include "hpcc.addImageAttrs" $commonCtx | indent 8 }}
         volumeMounts:
-        - name: localdisk
-          mountPath: "/var/lib/HPCCSystems/hpcc-data"
-          readOnly: false   
+        - name: nvme
+          mountPath: /var/lib/HPCCSystems/hpcc-data 
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
       volumes:
-      - name: localdisk
-        persistentVolumeClaim:
-          claimName: pvc-localdisk
+      - name: nvme
+        hostPath:
+          path: /mnt/fast-disks
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
+{{ include "hpcc.addDllVolume" $ | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
 ---
 kind: ConfigMap
 {{ include "hpcc.thorConfigMap" $commonCtx }}
