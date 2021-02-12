@@ -358,9 +358,9 @@ roxie:
 thor:
 - name: thor
   prefix: thor
-  numWorkers: 20
-  maxJobs: 20
-  maxGraphs: 20
+  numWorkers: 10
+  maxJobs: 10
+  maxGraphs: 10
   #managerResources:
   #  cpu: "1"
   #  memory: "2G"
