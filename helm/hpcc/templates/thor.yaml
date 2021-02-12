@@ -132,7 +132,7 @@ data:
           volumes:
           - name: nvme
             hostPath:
-              path: /mnt/fast-disks
+              path: /pv-disks/nvme
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
 {{ include "hpcc.addDllVolume" .root | indent 10 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
@@ -190,7 +190,7 @@ data:
           volumes:
           - name: nvme
             hostPath:
-              path: /mnt/fast-disks
+              path: /pv-disks/nvme
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
 {{ include "hpcc.addDllVolume" .root | indent 10 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" .root "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
@@ -334,7 +334,7 @@ spec:
       volumes:
       - name: nvme
         hostPath:
-          path: /mnt/fast-disks
+          path: /pv-disks/nvme
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
 {{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
